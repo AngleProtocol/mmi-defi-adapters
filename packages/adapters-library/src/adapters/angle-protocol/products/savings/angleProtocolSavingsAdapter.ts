@@ -1,7 +1,7 @@
 import { WeiPerEther, getAddress } from 'ethers'
+import { z } from 'zod'
 import { AdaptersController } from '../../../../core/adaptersController'
 import { Chain } from '../../../../core/constants/chains'
-import { z } from 'zod'
 import {
   CacheToFile,
   IMetadataBuilder,
@@ -26,10 +26,13 @@ import {
   UnwrapInput,
 } from '../../../../types/adapter'
 import { Erc20Metadata } from '../../../../types/erc20Metadata'
+import {
+  WriteActionInputSchemas,
+  WriteActions,
+} from '../../../../types/writeActions'
 import { Protocol } from '../../../protocols'
-import { Savings, Savings__factory } from '../../contracts'
-import { WriteActionInputSchemas, WriteActions } from '../../../../types/writeActions'
 import { GetTransactionParams } from '../../../supportedProtocols'
+import { Savings, Savings__factory } from '../../contracts'
 
 type AngleProtocolMetadata = {
   protocolToken: Erc20Metadata
@@ -185,28 +188,30 @@ export class AngleProtocolSavingsAdapter
     inputs,
   }: Extract<
     GetTransactionParams,
-    { protocolId: typeof Protocol.AngleProtocol; productId: "savings" }
+    { protocolId: typeof Protocol.AngleProtocol; productId: 'savings' }
   >): Promise<{ to: string; data: string }> {
     const { asset } = inputs
-    const tokens = await this.buildMetadata();
-    const token = tokens.find(
-      (t) => t.underlyingToken.address === asset,
-    )!;
+    const tokens = await this.buildMetadata()
+    const token = tokens.find((t) => t.underlyingToken.address === asset)!
     const savingContract = Savings__factory.connect(
       token.protocolToken.address,
       this.provider,
     )
     switch (action) {
       case WriteActions.Deposit: {
-        const { amount, receiver } = inputs;
-        return savingContract.deposit.populateTransaction(amount, receiver);
+        const { amount, receiver } = inputs
+        return savingContract.deposit.populateTransaction(amount, receiver)
       }
       case WriteActions.Withdraw: {
-        const { owner, amount, receiver } = inputs;
-        return savingContract.redeem.populateTransaction(amount, receiver, owner);
+        const { owner, amount, receiver } = inputs
+        return savingContract.redeem.populateTransaction(
+          amount,
+          receiver,
+          owner,
+        )
       }
       default:
-        throw new Error(`Action ${action} not supported`);
+        throw new Error(`Action ${action} not supported`)
     }
   }
 
