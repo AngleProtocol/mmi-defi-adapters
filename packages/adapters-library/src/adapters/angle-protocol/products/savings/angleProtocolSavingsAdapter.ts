@@ -202,8 +202,8 @@ export class AngleProtocolSavingsAdapter
         return savingContract.deposit.populateTransaction(amount, receiver);
       }
       case WriteActions.Withdraw: {
-        const { userAddress, amount, receiver } = inputs;
-        return savingContract.redeem.populateTransaction(amount, receiver, userAddress);
+        const { owner, amount, receiver } = inputs;
+        return savingContract.redeem.populateTransaction(amount, receiver, owner);
       }
       default:
         throw new Error(`Action ${action} not supported`);
@@ -427,6 +427,6 @@ export const WriteActionInputs = {
     asset: z.string(),
     amount: z.string(),
     receiver: z.string(),
-    userAddress: z.string(),
+    owner: z.string(),
   }),
 } satisfies WriteActionInputSchemas
